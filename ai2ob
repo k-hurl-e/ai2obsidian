@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Default model
+MODEL="llama3.1:8b"
+
+# Function to show usage
+show_usage() {
+    echo "Usage: ai2ob \"your prompt\" [filename] [-m model]"
+    echo "Options:"
+    echo "  -m    Specify Ollama model (default: llama3.1:8b)"
+    exit 1
+}
+
+# Parse options
+while getopts "m:h" opt; do
+    case $opt in
+        m) MODEL="$OPTARG";;
+        h) show_usage;;
+        ?) show_usage;;
+    esac
+done
+
+# Shift past the options
+shift $((OPTIND-1))
+
+# Check if at least one argument (the prompt) is provided
+if [ $# -eq 0 ]; then
+    show_usage
+fi
+
+# The first argument is the prompt
+prompt="$1"
+
+# Check if a second argument (filename) is provided
+if [ $# -eq 2 ]; then
+    # Run with custom filename
+    ollama run "$MODEL" "$prompt" | python3 /usr/local/lib/ai2obsidian/ollama_to_obsidian.py "$prompt" -f "$2"
+else
+    # Run without custom filename
+    ollama run "$MODEL" "$prompt" | python3 /usr/local/lib/ai2obsidian/ollama_to_obsidian.py "$prompt"
+fi 
